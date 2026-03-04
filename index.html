@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Adam Fennassi — DevOps & Automatisation</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1117;
+    --panel: #111820;
+    --border: #1e2d3d;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --green: #00ff87;
+    --orange: #ff7b2e;
+    --text: #c9d1d9;
+    --muted: #58677a;
+    --white: #f0f6fc;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  .cursor {
+    position: fixed; width: 8px; height: 8px;
+    background: var(--accent); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    box-shadow: 0 0 12px var(--accent);
+  }
+  .cursor-ring {
+    position: fixed; width: 36px; height: 36px;
+    border: 1px solid rgba(0,212,255,0.4); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: all 0.15s ease;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: rgba(8,12,16,0.85); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--white); }
+  .logo span { color: var(--accent); }
+  nav ul { list-style: none; display: flex; gap: 2.5rem; }
+  nav a {
+    text-decoration: none; color: var(--muted);
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    transition: color 0.2s; position: relative;
+  }
+  nav a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 1px; background: var(--accent); transition: width 0.3s;
+  }
+  nav a:hover { color: var(--accent); }
+  nav a:hover::after { width: 100%; }
+
+  section {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto; padding: 6rem 2rem;
+  }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding-top: 8rem;
+    max-width: 100%; padding-left: 8vw; padding-right: 8vw;
+  }
+  .hero-label {
+    font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s 0.2s ease forwards;
+  }
+  .hero-label::before { content: '// '; color: var(--muted); }
+  .hero-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    font-weight: 800; line-height: 0.95; color: var(--white);
+    letter-spacing: -0.03em;
+    opacity: 0; animation: fadeUp 0.6s 0.4s ease forwards;
+  }
+  .hero-name .accent { color: var(--accent); }
+  .hero-role {
+    margin-top: 2rem; font-size: clamp(0.95rem, 2vw, 1.2rem);
+    color: var(--muted); max-width: 640px; line-height: 1.8;
+    opacity: 0; animation: fadeUp 0.6s 0.6s ease forwards;
+  }
+  .hero-role strong { color: var(--green); font-weight: 400; }
+
+  .terminal-line {
+    margin-top: 2.5rem;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.2rem 1.5rem;
+    font-size: 0.78rem; color: var(--muted); max-width: 580px;
+    opacity: 0; animation: fadeUp 0.6s 0.8s ease forwards;
+  }
+  .tl-header {
+    display: flex; gap: 6px; align-items: center;
+    margin-bottom: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border);
+  }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .tl-dot.r { background: #ff5f57; }
+  .tl-dot.y { background: #febc2e; }
+  .tl-dot.g { background: #28c840; }
+  .tl-label { font-size: 0.62rem; color: var(--muted); margin-left: 0.3rem; }
+  .tl-line { display: block; padding: 0.12rem 0; }
+  .prompt { color: var(--green); }
+  .cmd { color: var(--accent); }
+  .out { color: var(--text); padding-left: 1.2rem; }
+  .out.dim { color: var(--muted); }
+  .blink { display: inline-block; width: 7px; height: 0.9em; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
+
+  .hero-cta {
+    display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.6s 1s ease forwards;
+  }
+  .btn {
+    text-decoration: none; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.8rem 1.8rem; border-radius: 4px; transition: all 0.2s; cursor: none;
+  }
+  .btn-primary { background: var(--accent); color: var(--bg); font-weight: 700; border: 1px solid var(--accent); }
+  .btn-primary:hover { background: transparent; color: var(--accent); }
+  .btn-ghost { border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* SECTION HEADERS */
+  .sec-tag { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.8rem; }
+  .sec-tag::before { content: '// '; color: var(--muted); }
+  .sec-title { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--white); letter-spacing: -0.02em; margin-bottom: 3rem; }
+  .sec-title span { color: var(--accent); }
+
+  /* ABOUT */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+  .about-text { line-height: 1.9; font-size: 0.83rem; color: var(--text); }
+  .about-text p + p { margin-top: 1rem; }
+  .hl { color: var(--accent); }
+  .hl-green { color: var(--green); }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; transition: border-color 0.2s; }
+  .stat-card:hover { border-color: var(--accent); }
+  .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1; }
+  .stat-label { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.05em; margin-top: 0.4rem; text-transform: uppercase; }
+
+  /* SKILLS */
+  .skills-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; }
+  .skill-group {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.6rem;
+    transition: all 0.25s; position: relative; overflow: hidden;
+  }
+  .skill-group::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+  }
+  .skill-group:hover::before { transform: scaleX(1); }
+  .skill-group:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-2px); }
+  .skill-group-title { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .tag { background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.12); color: var(--text); font-size: 0.7rem; padding: 0.3rem 0.65rem; border-radius: 3px; transition: all 0.2s; }
+  .tag:hover { background: rgba(0,212,255,0.14); color: var(--accent); border-color: var(--accent); }
+  .tag.devops { border-color: rgba(0,255,135,0.18); background: rgba(0,255,135,0.05); }
+  .tag.devops:hover { background: rgba(0,255,135,0.12); color: var(--green); border-color: var(--green); }
+  .tag.sys { border-color: rgba(255,123,46,0.2); background: rgba(255,123,46,0.05); }
+  .tag.sys:hover { background: rgba(255,123,46,0.12); color: var(--orange); border-color: var(--orange); }
+
+  /* PROJECT FILTERS */
+  .filter-bar { display: flex; gap: 0.6rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+  .filter-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.5rem 1.1rem; border-radius: 3px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); cursor: none; transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.06); }
+  .filter-btn[data-filter="devops"].active { border-color: var(--green); color: var(--green); background: rgba(0,255,135,0.06); }
+  .filter-btn[data-filter="systeme"].active { border-color: var(--orange); color: var(--orange); background: rgba(255,123,46,0.06); }
+  .filter-btn[data-filter="data"].active { border-color: #a78bfa; color: #a78bfa; background: rgba(124,58,237,0.06); }
+
+  /* PROJECTS */
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.3rem; }
+  .project-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.8rem;
+    position: relative; overflow: hidden;
+    transition: all 0.3s; display: flex; flex-direction: column; gap: 0.9rem;
+  }
+  .project-card.hidden { display: none; }
+  .project-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,212,255,0.03), transparent 60%);
+    opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .project-card:hover { border-color: rgba(0,212,255,0.35); transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.35); }
+  .project-card:hover::after { opacity: 1; }
+  .project-card[data-cat="devops"] { border-left: 2px solid rgba(0,255,135,0.3); }
+  .project-card[data-cat="systeme"] { border-left: 2px solid rgba(255,123,46,0.3); }
+  .project-card[data-cat="web"] { border-left: 2px solid rgba(0,212,255,0.3); }
+  .project-card[data-cat="data"] { border-left: 2px solid rgba(124,58,237,0.3); }
+
+  .project-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+  .project-num { font-size: 0.58rem; color: var(--muted); letter-spacing: 0.2em; }
+  .project-cat-badge { font-size: 0.58rem; padding: 0.2rem 0.55rem; border-radius: 2px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+  .project-cat-badge.devops { background: rgba(0,255,135,0.1); color: var(--green); border: 1px solid rgba(0,255,135,0.2); }
+  .project-cat-badge.systeme { background: rgba(255,123,46,0.1); color: var(--orange); border: 1px solid rgba(255,123,46,0.2); }
+  .project-cat-badge.web { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+  .project-cat-badge.data { background: rgba(124,58,237,0.1); color: #a78bfa; border: 1px solid rgba(124,58,237,0.2); }
+
+  .project-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--white); }
+  .project-desc { font-size: 0.77rem; color: var(--muted); line-height: 1.75; flex: 1; }
+  .project-stack { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .stack-badge { font-size: 0.63rem; padding: 0.22rem 0.55rem; border-radius: 3px; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25); color: #a78bfa; }
+  .project-links { display: flex; gap: 1rem; }
+  .project-link { font-size: 0.68rem; text-decoration: none; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; transition: opacity 0.2s; }
+  .project-link:hover { opacity: 0.6; }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+    background: linear-gradient(to bottom, var(--green), var(--accent), var(--orange), transparent);
+  }
+  .timeline-item { position: relative; padding-bottom: 2.5rem; padding-left: 1.5rem; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -0.35rem; top: 0.4rem;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 10px var(--accent);
+  }
+  .timeline-item.epitech::before { background: var(--orange); box-shadow: 0 0 10px var(--orange); }
+  .timeline-item.future::before { background: var(--green); box-shadow: 0 0 14px var(--green); }
+  .timeline-date { font-size: 0.62rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .timeline-item.epitech .timeline-date { color: var(--orange); }
+  .timeline-item.future .timeline-date { color: var(--green); }
+  .timeline-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.3rem; }
+  .timeline-sub { font-size: 0.73rem; color: var(--muted); margin-bottom: 0.6rem; }
+  .timeline-desc { font-size: 0.77rem; color: var(--text); line-height: 1.75; }
+
+  /* CONTACT */
+  #contact { text-align: center; max-width: 700px; margin: 0 auto; padding-bottom: 8rem; }
+  .contact-email {
+    display: inline-block; font-family: 'Syne', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 2.2rem); font-weight: 800; color: var(--white);
+    text-decoration: none; border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.2rem; margin: 2rem 0 3rem; transition: color 0.2s;
+  }
+  .contact-email:hover { color: var(--accent); }
+  .social-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+  .social-link {
+    text-decoration: none; color: var(--muted); font-size: 0.72rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1px solid var(--border); padding: 0.7rem 1.4rem; border-radius: 4px; transition: all 0.2s;
+  }
+  .social-link:hover { color: var(--accent); border-color: var(--accent); background: rgba(0,212,255,0.05); }
+
+  footer { text-align: center; padding: 2rem; font-size: 0.62rem; color: var(--muted); border-top: 1px solid var(--border); position: relative; z-index: 1; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .reveal { opacity: 1; transform: none; transition: all 0.65s ease; }
+  
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    nav ul { gap: 1.2rem; font-size: 0.65rem; }
+    #hero { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+    section { padding: 4rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <div class="logo">Adam<span>.</span>dev</div>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projets</a></li>
+    <li><a href="#parcours">Parcours</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-label">L3 MIASHS × Epitech · Toulouse · 15+ projets GitHub</p>
+  <h1 class="hero-name">Adam<br/><span class="accent">Fennassi</span></h1>
+  <p class="hero-role">
+    Étudiant en informatique · Aspirant <strong>Ingénieur DevOps & Cloud</strong><br/>
+    CI/CD · Programmation système · Automatisation · Infrastructure as Code
+  </p>
+  <div class="terminal-line">
+    <div class="tl-header">
+      <div class="tl-dot r"></div><div class="tl-dot y"></div><div class="tl-dot g"></div>
+      <span class="tl-label">adam@toulouse — zsh</span>
+    </div>
+    <span class="tl-line"><span class="prompt">❯</span> <span class="cmd">cat ./profil.txt</span></span>
+    <span class="tl-line out">Double formation : MIASHS Toulouse 2 + Epitech Lille</span>
+    <span class="tl-line out">Langages : C · C++ · Python · Java · JS · Bash · OCaml · R · SQL</span>
+    <span class="tl-line out">DevOps    : GitHub Actions · Docker · CI/CD · Shell scripting</span>
+    <span class="tl-line out">Système   : fork/exec · signaux UNIX · IPC · VM · Valgrind</span>
+    <span class="tl-line" style="margin-top:0.3rem"><span class="prompt">❯</span> <span class="cmd">git log --oneline -1</span></span>
+    <span class="tl-line out dim">a3f9c2b open to: master DevOps/Cloud, stage, alternance <span class="blink"></span></span>
+  </div>
+  <div class="hero-cta">
+    <a href="#projects" class="btn btn-primary">Voir mes projets</a>
+    <a href="https://github.com/adamfennassi" target="_blank" class="btn btn-ghost">→ GitHub</a>
+    <a href="#contact" class="btn btn-ghost">→ Me contacter</a>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <p class="sec-tag">01 · à propos</p>
+  <h2 class="sec-title">Qui je <span>suis</span></h2>
+  <div class="about-grid reveal">
+    <div class="about-text">
+      <p>Je m'appelle <span class="hl">Adam Fennassi</span>, étudiant en L3 <span class="hl">MIASHS</span> à l'Université Toulouse 2 Jean-Jaurès avec une double formation incluant une année à <span class="hl">Epitech Lille</span> — programmation système, bas niveau en C, Unix, et projets intensifs en pair-learning.</p>
+      <p>Cette combinaison m'a forgé une culture technique large : gestion mémoire et processus UNIX en C, architecture logicielle MVC/Design Patterns en Java, data science Python/R, et développement web React/JS.</p>
+      <p>Ce qui m'anime vraiment : <span class="hl-green">l'automatisation</span>. Pipeline CI/CD qui déploie sans friction, script Bash qui génère des Makefiles, VM qui exécute du bytecode — j'aime construire des systèmes qui travaillent à ma place.</p>
+      <p>En parallèle de mes études, je gère une activité e-commerce (trottinettes électriques) qui m'a appris l'administration serveur WordPress et l'automatisation de catalogues en conditions réelles.</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">15+</div>
+        <div class="stat-label">Projets GitHub</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">9+</div>
+        <div class="stat-label">Langages</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">2×</div>
+        <div class="stat-label">Écoles (MIASHS + Epitech)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">FR/EN/AR</div>
+        <div class="stat-label">Langues</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <p class="sec-tag">02 · compétences</p>
+  <h2 class="sec-title">Stack <span>&</span> outils</h2>
+  <div class="skills-container reveal">
+    <div class="skill-group">
+      <div class="skill-group-title">Langages</div>
+      <div class="skill-tags">
+        <span class="tag">C</span><span class="tag">C++</span><span class="tag">Python</span>
+        <span class="tag">Java</span><span class="tag">JavaScript</span><span class="tag">Bash / Shell</span>
+        <span class="tag">OCaml</span><span class="tag">R</span><span class="tag">SQL</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">DevOps & CI/CD</div>
+      <div class="skill-tags">
+        <span class="tag devops">GitHub Actions</span><span class="tag devops">Docker</span>
+        <span class="tag devops">Git / GitLab</span><span class="tag devops">Makefile</span>
+        <span class="tag devops">YAML Pipelines</span><span class="tag devops">Mirroring SSH</span>
+        <span class="tag devops">Linux / UNIX</span><span class="tag devops">Linting CI</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">Programmation Système</div>
+      <div class="skill-tags">
+        <span class="tag sys">fork / exec / wait</span><span class="tag sys">Pipes & redirections</span>
+        <span class="tag sys">Signaux UNIX</span><span class="tag sys">IPC</span>
+        <span class="tag sys">POSIX</span><span class="tag sys">Valgrind</span>
+        <span class="tag sys">Bytecode / ASM</span><span class="tag sys">Endianness</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">Tests & Qualité</div>
+      <div class="skill-tags">
+        <span class="tag">JUnit 5</span><span class="tag">Mockito</span>
+        <span class="tag">JaCoCo</span><span class="tag">SonarQube</span>
+        <span class="tag">TDD</span><span class="tag">Tests unitaires</span><span class="tag">Valgrind</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">Web & Frameworks</div>
+      <div class="skill-tags">
+        <span class="tag">React</span><span class="tag">Next.js</span><span class="tag">Node.js</span>
+        <span class="tag">REST API</span><span class="tag">Async/Await</span>
+        <span class="tag">HTML/CSS</span><span class="tag">Maven</span><span class="tag">WooCommerce</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">Data & NLP</div>
+      <div class="skill-tags">
+        <span class="tag">Python ETL</span><span class="tag">SQLite</span>
+        <span class="tag">R Markdown</span><span class="tag">Pandas</span>
+        <span class="tag">Jupyter</span><span class="tag">Spacy</span><span class="tag">Stanza</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <p class="sec-tag">03 · réalisations</p>
+  <h2 class="sec-title">Projets <span>sélectionnés</span></h2>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">Tous (12)</button>
+    <button class="filter-btn" data-filter="devops">DevOps / CI-CD</button>
+    <button class="filter-btn" data-filter="systeme">Système</button>
+    <button class="filter-btn" data-filter="web">Web / Java</button>
+    <button class="filter-btn" data-filter="data">Data / NLP</button>
+  </div>
+
+  <div class="projects-grid">
+
+    <div class="project-card reveal" data-cat="devops">
+      <div class="project-header"><div class="project-num">// 001</div><span class="project-cat-badge devops">DevOps</span></div>
+      <div class="project-title">Pipeline CI/CD — Chocolatine</div>
+      <div class="project-desc">Pipeline d'intégration continue complet avec 5 jobs séquentiels : linting (Docker), scan dépôt, compilation Dockerisée, tests unitaires, mirroring SSH. Annotations automatiques dans les PR GitHub.</div>
+      <div class="project-stack">
+        <span class="stack-badge">GitHub Actions</span><span class="stack-badge">Docker</span>
+        <span class="stack-badge">YAML</span><span class="stack-badge">Shell</span><span class="stack-badge">Makefile</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/DevOps-CI-CD-Chocolatine" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="devops">
+      <div class="project-header"><div class="project-num">// 002</div><span class="project-cat-badge devops">Automatisation</span></div>
+      <div class="project-title">Build Automation — Automakefile</div>
+      <div class="project-desc">Générateur Bash de Makefiles pour projets C : détection auto des sources, headers, librairies, flags système, règles de compilation/nettoyage/backup. Réduit le temps de setup de zéro à opérationnel.</div>
+      <div class="project-stack">
+        <span class="stack-badge">Bash</span><span class="stack-badge">Shell Scripting</span>
+        <span class="stack-badge">Makefile</span><span class="stack-badge">Automatisation</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/Build-Automation-Tool" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="systeme">
+      <div class="project-header"><div class="project-num">// 003</div><span class="project-cat-badge systeme">Système</span></div>
+      <div class="project-title">Shell UNIX — Minishell</div>
+      <div class="project-desc">Réimplémentation d'un interpréteur POSIX : built-ins (cd, env, setenv, exit), pipes, redirections (>, >>, &lt;, &lt;&lt;), signaux SIGINT. Gestion avancée des processus. Zéro fuite validée Valgrind.</div>
+      <div class="project-stack">
+        <span class="stack-badge">C</span><span class="stack-badge">fork/exec</span>
+        <span class="stack-badge">Signaux UNIX</span><span class="stack-badge">POSIX</span><span class="stack-badge">Valgrind</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/Unix-Shell-Implementation" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="systeme">
+      <div class="project-header"><div class="project-num">// 004</div><span class="project-cat-badge systeme">VM / Compilateur</span></div>
+      <div class="project-title">Machine Virtuelle — Corewar</div>
+      <div class="project-desc">VM simulant un processeur avec RAM partagée pour l'exécution de programmes concurrents. Ordonnanceur multi-processus, compilateur ASM → bytecode binaire, résolution de labels, gestion de l'endianness.</div>
+      <div class="project-stack">
+        <span class="stack-badge">C</span><span class="stack-badge">Bytecode</span>
+        <span class="stack-badge">ASM</span><span class="stack-badge">Concurrence</span><span class="stack-badge">Makefile</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/Virtual-Machine-Corewar" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="systeme">
+      <div class="project-header"><div class="project-num">// 005</div><span class="project-cat-badge systeme">IPC</span></div>
+      <div class="project-title">Communication IPC — Navy</div>
+      <div class="project-desc">Protocole de communication binaire custom entre deux processus via SIGUSR1/SIGUSR2. Gestion de la communication asynchrone, états de pause et handlers de signaux avancés par PIDs.</div>
+      <div class="project-stack">
+        <span class="stack-badge">C</span><span class="stack-badge">Signaux UNIX</span>
+        <span class="stack-badge">IPC</span><span class="stack-badge">Async</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/Unix-Signal-Communication-Game" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="systeme">
+      <div class="project-header"><div class="project-num">// 006</div><span class="project-cat-badge systeme">Algorithmes</span></div>
+      <div class="project-title">Optimisation — BSQ</div>
+      <div class="project-desc">Algorithme de programmation dynamique O(n²) pour le plus grand carré dans une matrice. Optimisation du parsing de fichiers volumineux pour minimiser l'empreinte mémoire et le temps CPU.</div>
+      <div class="project-stack">
+        <span class="stack-badge">C</span><span class="stack-badge">Prog. Dynamique</span>
+        <span class="stack-badge">Optimisation</span><span class="stack-badge">Algorithmique</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/Dynamic-Programming-Algorithm" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="web">
+      <div class="project-header"><div class="project-num">// 007</div><span class="project-cat-badge web">Java · TDD</span></div>
+      <div class="project-title">TEC — Système de Transport</div>
+      <div class="project-desc">Simulation d'un réseau de transport MVC avec design patterns State & Factory. Tests JUnit 5 + Mockito (mocks), couverture JaCoCo, analyse statique SonarQube. Architecture orientée interfaces.</div>
+      <div class="project-stack">
+        <span class="stack-badge">Java 17</span><span class="stack-badge">Maven</span>
+        <span class="stack-badge">JUnit</span><span class="stack-badge">Mockito</span><span class="stack-badge">SonarQube</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/TEC-Transport-System" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="web">
+      <div class="project-header"><div class="project-num">// 008</div><span class="project-cat-badge web">C++ · POO</span></div>
+      <div class="project-title">Dungeon Auto-Battle</div>
+      <div class="project-desc">Simulateur RPG tour par tour — 6 classes de héros, effets de statut, mode tournoi. POO avancée : héritage multiple, polymorphisme, classes abstraites, Abstract Factory pattern.</div>
+      <div class="project-stack">
+        <span class="stack-badge">C++</span><span class="stack-badge">Héritage</span>
+        <span class="stack-badge">Polymorphisme</span><span class="stack-badge">Abstract Factory</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/Licence-Miashs/tree/master/Dungeon-Auto-Battle" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="web">
+      <div class="project-header"><div class="project-num">// 009</div><span class="project-cat-badge web">Python · MVC</span></div>
+      <div class="project-title">DreamParking</div>
+      <div class="project-desc">Application desktop Python (Tkinter) architecture MVC : attribution auto des places, services intégrés (livraison, entretien, maintenance), tableau de bord stats. 13 tests unitaires, diagrammes UML.</div>
+      <div class="project-stack">
+        <span class="stack-badge">Python</span><span class="stack-badge">Tkinter</span>
+        <span class="stack-badge">MVC</span><span class="stack-badge">13 Tests</span><span class="stack-badge">UML</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/DreamParking" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="web">
+      <div class="project-header"><div class="project-num">// 010</div><span class="project-cat-badge web">JavaScript</span></div>
+      <div class="project-title">App Tisséo & Giphy</div>
+      <div class="project-desc">Application consommant l'API Tisséo (transports Toulouse) et l'API Giphy. Double implémentation comparative Promises vs Async/Await pour démontrer la maîtrise de la programmation asynchrone en JS.</div>
+      <div class="project-stack">
+        <span class="stack-badge">JavaScript</span><span class="stack-badge">REST API</span>
+        <span class="stack-badge">Async/Await</span><span class="stack-badge">Promises</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/Licence-Miashs/tree/master/Dev-Web-Tisseo/web_app_tisseo" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="data">
+      <div class="project-header"><div class="project-num">// 011</div><span class="project-cat-badge data">Data Science</span></div>
+      <div class="project-title">Analyse Incendies France</div>
+      <div class="project-desc">Pipeline ETL complet : extraction Python de 3 sources CSV → nettoyage → stockage SQLite → analyse statistique multidimensionnelle en R Markdown (rapport de 927 lignes avec visualisations).</div>
+      <div class="project-stack">
+        <span class="stack-badge">Python</span><span class="stack-badge">SQLite</span>
+        <span class="stack-badge">R Markdown</span><span class="stack-badge">Pandas</span><span class="stack-badge">ETL</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi/Analyse-Incendies-France" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+    <div class="project-card reveal" data-cat="data">
+      <div class="project-header"><div class="project-num">// 012</div><span class="project-cat-badge data">NLP</span></div>
+      <div class="project-title">Traitement du Langage Naturel</div>
+      <div class="project-desc">TDs de NLP appliqué : segmentation, tokenisation, lemmatisation et analyse de corpus avec Spacy et Stanza. Comparaison des modèles, évaluation des performances et exploitation de pipelines NLP.</div>
+      <div class="project-stack">
+        <span class="stack-badge">Python</span><span class="stack-badge">Jupyter</span>
+        <span class="stack-badge">Spacy</span><span class="stack-badge">Stanza</span><span class="stack-badge">NLP</span>
+      </div>
+      <div class="project-links"><a href="https://github.com/adamfennassi" target="_blank" class="project-link">→ GitHub</a></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PARCOURS -->
+<section id="parcours">
+  <p class="sec-tag">04 · parcours</p>
+  <h2 class="sec-title">Mon <span>chemin</span></h2>
+
+  <div style="display:flex; gap:0.5rem; margin-bottom:2rem; flex-wrap:wrap;">
+    <button class="filter-btn active" data-tab="formation" onclick="switchTab('formation')">Formation</button>
+    <button class="filter-btn" data-tab="experience" onclick="switchTab('experience')">Expériences</button>
+  </div>
+
+  <!-- FORMATION -->
+  <div id="tab-formation" class="timeline reveal">
+
+    <div class="timeline-item future">
+      <div class="timeline-date">2026 — 2028 · Objectif</div>
+      <div class="timeline-title">Master DevOps, Cloud & Automatisation</div>
+      <div class="timeline-sub">Candidature en cours</div>
+      <div class="timeline-desc">Approfondir l'Infrastructure as Code, l'orchestration Kubernetes, le SRE et les pratiques GitOps.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">2024 — en cours · Auto-formation</div>
+      <div class="timeline-title">Formation DevOps & Cloud</div>
+      <div class="timeline-sub">Udemy · Veille technologique active</div>
+      <div class="timeline-desc">Docker, Linux avancé, CI/CD, Infrastructure as Code, automatisation de workflows. Suivi actif de la communauté DevOps open-source.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">2025 — 2026 · En cours</div>
+      <div class="timeline-title">L3 MIASHS — option Informatique</div>
+      <div class="timeline-sub">Université Toulouse 2 Jean-Jaurès (UT2J) · Toulouse</div>
+      <div class="timeline-desc">Java (POO, TDD, JUnit/Mockito, JaCoCo, SonarQube), C++, Python, JavaScript, OCaml, R, SQL. Architecture MVC, Design Patterns, Data Science, NLP. 15+ projets livrés.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">2024 — 2025</div>
+      <div class="timeline-title">L2 MIASHS — option Informatique</div>
+      <div class="timeline-sub">Université Toulouse 2 Jean-Jaurès (UT2J) · Toulouse</div>
+      <div class="timeline-desc">Transfert à Toulouse, spécialisation informatique. Programmation orientée objet, développement web, algorithmique avancée et bases de données.</div>
+    </div>
+
+    <div class="timeline-item epitech">
+      <div class="timeline-date">2023 — 2024</div>
+      <div class="timeline-title">Expert en Technologies de l'Information — 1ère année</div>
+      <div class="timeline-sub">Epitech · Lille</div>
+      <div class="timeline-desc">Formation par projets intensifs en C et système Unix. Programmation système : gestion mémoire, processus (fork/exec), signaux UNIX, IPC, VM/assembleur, CI/CD GitHub Actions. Pédagogie pair-learning & peer-review. Piscine C : 12 jours intensifs d'algorithmique.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">2021 — 2022</div>
+      <div class="timeline-title">L1 MIASHS</div>
+      <div class="timeline-sub">Université de Lille · Lille</div>
+      <div class="timeline-desc">Première année de licence avec les bases en mathématiques appliquées, algorithmique et introduction à la programmation.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">2019 — 2020</div>
+      <div class="timeline-title">Baccalauréat S — Physique-Chimie</div>
+      <div class="timeline-sub">Casablanca, Maroc</div>
+      <div class="timeline-desc">Bac scientifique avec spécialité physique-chimie. Socle solide en sciences et mathématiques ayant orienté vers l'informatique.</div>
+    </div>
+
+  </div>
+
+  <!-- EXPÉRIENCES -->
+  <div id="tab-experience" class="timeline reveal" style="display:none;">
+
+    <div class="timeline-item">
+      <div class="timeline-date">2026 — en cours · Entrepreneuriat</div>
+      <div class="timeline-title">E-commerce</div>
+      <div class="timeline-sub">Auto-entrepreneur · Toulouse</div>
+      <div class="timeline-desc">Gestion complète d'une boutique Wordpress/Shopify en production : administration serveur WordPress, automatisation des imports CSV de catalogues, shipping conditionnel, maintenance et SEO et réglages de problèmes PHP.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">2024 Avril - Aout· Retail</div>
+      <div class="timeline-title">Vendeur Polyvalent</div>
+      <div class="timeline-sub">Primark</div>
+      <div class="timeline-desc">Conseil client, réassort et mise en rayon, encaissement, gestion du flux en magasin. Développement des compétences en relation client et travail en équipe.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">En cours · Restauration rapide</div>
+      <div class="timeline-title">Équipier Polyvalent</div>
+      <div class="timeline-sub">Quick</div>
+      <div class="timeline-desc">Préparation des commandes, accueil client, encaissement, entretien de l'espace de travail. Gestion du stress en période de fort flux et polyvalence des postes.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">Mai — Août 2023 · 4 mois</div>
+      <div class="timeline-title">Serveur — Job d'été</div>
+      <div class="timeline-sub">Restaurant Le Bennett's · Lille</div>
+      <div class="timeline-desc">Accueil client, service en salle et prise de commande, encaissement, préparation et entretien de la salle. Première expérience longue durée en environnement professionnel exigeant.</div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-date">Juillet — Août 2022 · 1 mois</div>
+      <div class="timeline-title">Stage de Découverte — Secteur Bancaire</div>
+      <div class="timeline-sub">BMCI — Filiale Groupe BNP Paribas · Casablanca</div>
+      <div class="timeline-desc">Initiation au monde de l'entreprise dans le domaine bancaire. Ouverture de comptes, initiation au marketing (cartes, assurances) et à la mise en place des dossiers crédits.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <p class="sec-tag">05 · contact</p>
+  <h2 class="sec-title">Travaillons <span>ensemble</span></h2>
+  <p style="font-size:0.8rem; color:var(--muted); line-height:1.9; max-width:520px; margin:0 auto;">
+    Je cherche un <span style="color:var(--green)">master en DevOps / Cloud</span> et suis ouvert aux stages et alternances. Disponible dès septembre 2026.
+  </p>
+  <a href="mailto:adamfennassi@outlook.com" class="contact-email reveal">adamfennassi@outlook.com</a>
+  <div class="social-links reveal">
+    <a href="https://github.com/adamfennassi" target="_blank" class="social-link">GitHub</a>
+    <a href="https://linkedin.com/in/adamfennassi" target="_blank" class="social-link">LinkedIn</a>
+    <a href="cv_adam_fennassi.pdf" download class="social-link">CV PDF</a>
+  </div>
+</section>
+
+<footer>
+  <p>// Conçu & développé par Adam Fennassi · 2026 · Toulouse — L3 MIASHS × Epitech</p>
+</footer>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+});
+(function animRing() {
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+})();
+
+document.querySelectorAll('a, button, .skill-group, .project-card, .stat-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { ring.style.transform = 'translate(-50%,-50%) scale(1.8)'; ring.style.borderColor = 'rgba(0,212,255,0.6)'; });
+  el.addEventListener('mouseleave', () => { ring.style.transform = 'translate(-50%,-50%) scale(1)'; ring.style.borderColor = 'rgba(0,212,255,0.4)'; });
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
+document.querySelectorAll('.reveal').forEach(r => observer.observe(r));
+
+// Stagger
+document.querySelectorAll('.project-card').forEach((c, i) => c.style.transitionDelay = (i * 0.055) + 's');
+
+// Tab switcher parcours
+function switchTab(tab) {
+  document.getElementById('tab-formation').style.display = tab === 'formation' ? 'block' : 'none';
+  document.getElementById('tab-experience').style.display = tab === 'experience' ? 'block' : 'none';
+  document.querySelectorAll('[data-tab]').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+}
+
+// Filter
+const filterBtns = document.querySelectorAll('.filter-btn');
+const cards = document.querySelectorAll('.project-card');
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    let visible = 0;
+    cards.forEach(card => {
+      if (f === 'all' || card.dataset.cat === f) {
+        card.style.display = '';
+        visible++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
