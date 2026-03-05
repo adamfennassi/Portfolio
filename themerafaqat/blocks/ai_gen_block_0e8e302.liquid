@@ -1,0 +1,525 @@
+{% doc %}
+  @prompt
+    Create a custom Shopify section called “Luxury 3 Image Promo”.
+    
+    DESKTOP:
+    - Full width section
+    - Soft blush background (#d8c3c1)
+    - 3 equal images side-by-side (33.33% each)
+    - Gap between images: 24px
+    - No slider on desktop
+    - No animation
+    - Clean static grid
+    
+    Below images:
+    - Left aligned text block
+    - Heading (all caps):
+      MEET ANGEL HOLD STYLING CREAM
+    - Font: modern sans serif
+    - Letter spacing: 2px
+    - Weight: 600
+    - Size: 30px desktop
+    - Paragraph below (14–16px)
+    - Outline button:
+      Transparent background
+      1px solid dark border
+      Padding 12px 28px
+      Hover invert colors
+    
+    MOBILE:
+    - Convert image row into horizontal scroll slider
+    - No arrows
+    - No dots
+    - No navigation UI
+    - Use native overflow-x scroll
+    - scroll-snap enabled
+    - Smooth swipe
+    
+    Mobile slider settings:
+    - Show approximately 1.4 images visible
+    - Each slide width: 75%
+    - Gap between slides: 16px
+    - Add right padding so partial next image is visible
+    - Snap alignment: start
+    - Hide scrollbar
+    
+    Text on mobile:
+    - Center aligned
+    - Reduce heading to 22px
+    - Button centered
+    
+    Spacing:
+    - 60px top/bottom desktop
+    - 40px mobile
+    
+    Important:
+    - No third-party slider libraries
+    - Use pure CSS scroll-snap
+    - Must feel premium and minimal
+    - No autoplay
+    - No looping
+    - Clean beauty brand aesthetic, TEXT LEFT IN MOBILE AND IN DESKTOP MAKE IT NARROW BOLCK UPTO ONE COULMN
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-luxury-promo-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.padding_mobile }}px 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    .ai-luxury-promo-{{ ai_gen_id }} {
+      padding: {{ block.settings.padding_desktop }}px 0;
+    }
+  }
+
+  .ai-luxury-promo-container-{{ ai_gen_id }} {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .ai-luxury-promo-images-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.gap_mobile }}px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0 20px;
+  }
+
+  .ai-luxury-promo-images-{{ ai_gen_id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    .ai-luxury-promo-images-{{ ai_gen_id }} {
+      gap: {{ block.settings.gap_desktop }}px;
+      overflow-x: visible;
+      scroll-snap-type: none;
+      padding: 0 40px;
+    }
+  }
+
+  .ai-luxury-promo-image-wrapper-{{ ai_gen_id }} {
+    flex: 0 0 {{ block.settings.mobile_slide_width }}%;
+    scroll-snap-align: start;
+    position: relative;
+  }
+
+  @media screen and (min-width: 750px) {
+    .ai-luxury-promo-image-wrapper-{{ ai_gen_id }} {
+      flex: 1 1 33.33%;
+    }
+  }
+
+  .ai-luxury-promo-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .ai-luxury-promo-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-luxury-promo-image-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 300px;
+    max-height: 300px;
+  }
+
+  .ai-luxury-promo-content-{{ ai_gen_id }} {
+    padding: 40px 20px 0;
+    text-align: left;
+  }
+
+  @media screen and (min-width: 750px) {
+    .ai-luxury-promo-content-{{ ai_gen_id }} {
+      padding: 60px 40px 0;
+      max-width: 500px;
+    }
+  }
+
+  .ai-luxury-promo-heading-{{ ai_gen_id }} {
+    font-family: {{ block.settings.heading_font.family }}, {{ block.settings.heading_font.fallback_families }};
+    font-weight: {{ block.settings.heading_font.weight }};
+    font-style: {{ block.settings.heading_font.style }};
+    text-transform: uppercase;
+    letter-spacing: {{ block.settings.letter_spacing }}px;
+    font-size: {{ block.settings.heading_size_mobile }}px;
+    margin: 0 0 16px;
+    color: {{ block.settings.text_color }};
+  }
+
+  @media screen and (min-width: 750px) {
+    .ai-luxury-promo-heading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.heading_size_desktop }}px;
+    }
+  }
+
+  .ai-luxury-promo-text-{{ ai_gen_id }} {
+    font-size: {{ block.settings.text_size }}px;
+    line-height: 1.6;
+    margin: 0 0 24px;
+    color: {{ block.settings.text_color }};
+  }
+
+  .ai-luxury-promo-button-{{ ai_gen_id }} {
+    display: inline-block;
+    padding: {{ block.settings.button_padding_vertical }}px {{ block.settings.button_padding_horizontal }}px;
+    background-color: transparent;
+    color: {{ block.settings.button_text_color }};
+    border: {{ block.settings.button_border_width }}px solid {{ block.settings.button_border_color }};
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: {{ block.settings.text_size }}px;
+    cursor: pointer;
+  }
+
+  .ai-luxury-promo-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_bg }};
+    color: {{ block.settings.button_hover_text }};
+    border-color: {{ block.settings.button_hover_bg }};
+  }
+{% endstyle %}
+
+<luxury-promo-{{ ai_gen_id }} class="ai-luxury-promo-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-luxury-promo-container-{{ ai_gen_id }}">
+    <div class="ai-luxury-promo-images-{{ ai_gen_id }}">
+      {% if block.settings.image_1 %}
+        <div class="ai-luxury-promo-image-wrapper-{{ ai_gen_id }}">
+          <img
+            src="{{ block.settings.image_1 | image_url: width: 800 }}"
+            alt="{{ block.settings.image_1.alt | escape }}"
+            loading="lazy"
+            width="{{ block.settings.image_1.width }}"
+            height="{{ block.settings.image_1.height }}"
+            class="ai-luxury-promo-image-{{ ai_gen_id }}"
+          >
+        </div>
+      {% else %}
+        <div class="ai-luxury-promo-image-wrapper-{{ ai_gen_id }}">
+          <div class="ai-luxury-promo-image-placeholder-{{ ai_gen_id }}">
+            {{ 'image' | placeholder_svg_tag }}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if block.settings.image_2 %}
+        <div class="ai-luxury-promo-image-wrapper-{{ ai_gen_id }}">
+          <img
+            src="{{ block.settings.image_2 | image_url: width: 800 }}"
+            alt="{{ block.settings.image_2.alt | escape }}"
+            loading="lazy"
+            width="{{ block.settings.image_2.width }}"
+            height="{{ block.settings.image_2.height }}"
+            class="ai-luxury-promo-image-{{ ai_gen_id }}"
+          >
+        </div>
+      {% else %}
+        <div class="ai-luxury-promo-image-wrapper-{{ ai_gen_id }}">
+          <div class="ai-luxury-promo-image-placeholder-{{ ai_gen_id }}">
+            {{ 'image' | placeholder_svg_tag }}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if block.settings.image_3 %}
+        <div class="ai-luxury-promo-image-wrapper-{{ ai_gen_id }}">
+          <img
+            src="{{ block.settings.image_3 | image_url: width: 800 }}"
+            alt="{{ block.settings.image_3.alt | escape }}"
+            loading="lazy"
+            width="{{ block.settings.image_3.width }}"
+            height="{{ block.settings.image_3.height }}"
+            class="ai-luxury-promo-image-{{ ai_gen_id }}"
+          >
+        </div>
+      {% else %}
+        <div class="ai-luxury-promo-image-wrapper-{{ ai_gen_id }}">
+          <div class="ai-luxury-promo-image-placeholder-{{ ai_gen_id }}">
+            {{ 'image' | placeholder_svg_tag }}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="ai-luxury-promo-content-{{ ai_gen_id }}">
+      {% if block.settings.heading != blank %}
+        <h2 class="ai-luxury-promo-heading-{{ ai_gen_id }}">{{ block.settings.heading }}</h2>
+      {% endif %}
+
+      {% if block.settings.text != blank %}
+        <div class="ai-luxury-promo-text-{{ ai_gen_id }}">{{ block.settings.text }}</div>
+      {% endif %}
+
+      {% if block.settings.button_text != blank %}
+        <a href="{{ block.settings.button_link }}" class="ai-luxury-promo-button-{{ ai_gen_id }}">
+          {{ block.settings.button_text }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</luxury-promo-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class LuxuryPromo{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.imagesContainer = this.querySelector('.ai-luxury-promo-images-{{ ai_gen_id }}');
+      }
+    }
+
+    customElements.define('luxury-promo-{{ ai_gen_id }}', LuxuryPromo{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Luxury 3 image promo",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Image 3"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Meet Angel Hold Styling Cream"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Discover our luxurious styling cream that provides all-day hold while nourishing your hair with natural ingredients.</p>"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#d8c3c1"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Heading font",
+      "default": "sans-serif"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "label": "Heading size desktop",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Heading size mobile",
+      "min": 16,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "unit": "px",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Border color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "button_border_width",
+      "label": "Border width",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "button_padding_vertical",
+      "label": "Vertical padding",
+      "min": 8,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "button_padding_horizontal",
+      "label": "Horizontal padding",
+      "min": 16,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "color",
+      "id": "button_hover_bg",
+      "label": "Hover background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text",
+      "label": "Hover text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "gap_desktop",
+      "label": "Gap desktop",
+      "min": 16,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "label": "Gap mobile",
+      "min": 8,
+      "max": 24,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "mobile_slide_width",
+      "label": "Mobile slide width",
+      "min": 60,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 75
+    },
+    {
+      "type": "range",
+      "id": "padding_desktop",
+      "label": "Padding desktop",
+      "min": 40,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_mobile",
+      "label": "Padding mobile",
+      "min": 20,
+      "max": 60,
+      "step": 10,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Luxury 3 image promo"
+    }
+  ]
+}
+{% endschema %}
